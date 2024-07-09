@@ -1,0 +1,8 @@
+# Ignore data directory
+data/
+
+#Ignore .DS_Store
+.DS_Store
+
+#Ignore virtual env
+venv/
