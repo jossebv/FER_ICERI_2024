@@ -38,12 +38,12 @@ class RavdessDataloader:
         idx = 0
         while idx < self.data_len:
             frame_annotation = self.data.iloc[idx]
-            frame_path = frame_annotation[0]
+            frame_path = frame_annotation.loc["path"]
             landmarks_path = frame_path.replace("frames", "landmarks").replace(
                 "jpg", "npy"
             )
             landmarks = np.load(landmarks_path)
-            emotion_id = frame_annotation[1] - 1  # Emotions in range [0,7]
+            emotion_id = frame_annotation.loc["emotion"] - 1  # Emotions in range [0,7]
             yield landmarks, emotion_id
             idx += 1
 
@@ -84,5 +84,9 @@ if __name__ == "__main__":
         "train",
         4,
     )
+    testloader = prepare_dataloader(ANNOTATION_PATH, "test", 4)
 
     print(next(iter(trainloader)))
+    print(next(iter(testloader)))
+
+    print("Dataloader works correctly")
