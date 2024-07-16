@@ -38,11 +38,6 @@ class PICamera(Camera):
         try:
             from picamera import Picamera2
             import libcamera
-        except ModuleNotFoundError:
-            print(
-                "Cannnot initialize PiCamera on this device. Check if you are using a Raspberry Pi and it is up to date."
-            )
-            exit()
 
             picam2 = Picamera2()
             preview_config = picam2.create_preview_configuration(
@@ -56,3 +51,9 @@ class PICamera(Camera):
             )
             picam2.configure(preview_config)
             picam2.start_preview(Preview.NULL)
+
+        except ModuleNotFoundError:
+            print(
+                "Cannnot initialize PiCamera on this device. Check if you are using a Raspberry Pi and it is up to date."
+            )
+            exit()
