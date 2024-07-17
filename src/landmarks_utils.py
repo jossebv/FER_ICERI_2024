@@ -32,11 +32,19 @@ def hand_get_XYZ(results, image_rgb):
     return image_rgb, landmark_values
 
 
-def face_get_XYZ(results, image_rgb):
+def face_get_XYZ(results, image_rgb=None):
 
     landmark_values = [[0, 0] for _ in range(478)]
 
     for face_landmarks in results.multi_face_landmarks:
+        for i in range(len(face_landmarks.landmark)):
+            x = face_landmarks.landmark[i].x
+            y = 1 - face_landmarks.landmark[i].y
+            landmark_values[i] = [x, y]
+
+        if image_rgb is None:
+            return None, landmark_values
+
         mp.solutions.drawing_utils.draw_landmarks(
             image=image_rgb,
             landmark_list=face_landmarks,
@@ -58,10 +66,5 @@ def face_get_XYZ(results, image_rgb):
             landmark_drawing_spec=None,
             connection_drawing_spec=mp.solutions.drawing_styles.get_default_face_mesh_iris_connections_style(),
         )
-
-        for i in range(len(face_landmarks.landmark)):
-            x = face_landmarks.landmark[i].x
-            y = 1 - face_landmarks.landmark[i].y
-            landmark_values[i] = [x, y]
 
     return image_rgb, landmark_values
