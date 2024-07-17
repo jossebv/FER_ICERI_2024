@@ -38,7 +38,7 @@ def face_get_XYZ(results, image_rgb=None):
     landmark_values = [[0, 0] for _ in range(478)]
 
     if results.multi_face_landmarks is None:
-        return image_rgb, None
+        return image_rgb, landmark_values
 
     for face_landmarks in results.multi_face_landmarks:
         for i in range(len(face_landmarks.landmark)):
@@ -73,3 +73,17 @@ def face_get_XYZ(results, image_rgb=None):
         )
 
     return image_rgb, landmark_values
+
+
+def normalize_L0(landmarks):
+    if np.sum(landmarks) == 0:
+        return landmarks
+
+    x_off = landmarks[0, 0]
+    y_off = landmarks[0, 1]
+
+    for i in range(len(landmarks)):
+        landmarks[i, 0] -= x_off
+        landmarks[i, 1] -= y_off
+
+    return landmarks
