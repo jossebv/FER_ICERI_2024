@@ -55,20 +55,13 @@ def main():
         _, landmarks = face_get_XYZ(results=results, image_rgb=None)
 
         # Process the image to the model
-<<<<<<< Updated upstream
-        if now - last > 0.2:
-            results = mp_detector.process(image_rgb)
-            _, landmarks = face_get_XYZ(results)
-            landmarks = normalize_L0(landmarks)
-            prediction = model.predict(np.array(landmarks))
-=======
         if now - last > 0.5:
->>>>>>> Stashed changes
 
             if landmarks is None:
                 last = time.time()
                 continue
 
+            landmarks = normalize_L0(landmarks)
             landmarks = np.expand_dims(landmarks, (0, 3))
             prediction = np.argmax(model.predict(landmarks, verbose=0))
 
