@@ -28,7 +28,7 @@ def create_cnn(num_classes, dropout_rate=0.1):
     )
     model.add(keras.layers.Dropout(dropout_rate))
     model.add(keras.layers.Flatten())
-    model.add(keras.layers.Dense(16))
+    model.add(keras.layers.Dense(32))
     model.add(keras.layers.Dropout(dropout_rate))
     model.add(keras.layers.Dense(num_classes, activation="softmax"))
 

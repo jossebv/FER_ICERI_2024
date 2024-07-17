@@ -27,7 +27,7 @@ def main():
 
     model.fit(
         x=trainloader,
-        epochs=40,
+        epochs=60,
         validation_data=testloader,
         callbacks=[wandb.keras.WandbCallback()],
     )
