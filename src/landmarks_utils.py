@@ -1,4 +1,5 @@
 import mediapipe as mp
+import numpy as np
 
 
 def hand_get_XYZ(results, image_rgb):
@@ -36,6 +37,9 @@ def face_get_XYZ(results, image_rgb=None):
 
     landmark_values = [[0, 0] for _ in range(478)]
 
+    if results.multi_face_landmarks is None:
+        return image_rgb, None
+
     for face_landmarks in results.multi_face_landmarks:
         for i in range(len(face_landmarks.landmark)):
             x = face_landmarks.landmark[i].x
@@ -43,7 +47,8 @@ def face_get_XYZ(results, image_rgb=None):
             landmark_values[i] = [x, y]
 
         if image_rgb is None:
-            return None, landmark_values
+            landmarks = np.array(landmark_values)
+            return None, landmarks
 
         mp.solutions.drawing_utils.draw_landmarks(
             image=image_rgb,
