@@ -1,6 +1,7 @@
 import sys
 import keras
 import wandb
+from wandb.integration.keras import WandbMetricsLogger
 
 sys.path.append(".")
 
@@ -29,7 +30,7 @@ def main():
         x=trainloader,
         epochs=60,
         validation_data=testloader,
-        callbacks=[wandb.keras.WandbCallback()],
+        callbacks=[WandbMetricsLogger()],
     )
 
     wandb.finish()
