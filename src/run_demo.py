@@ -32,7 +32,7 @@ classes = [
 
 
 def main():
-    model = keras.models.load_model("models/model-best.h5")
+    model = keras.models.load_model("models/cnn.keras")
     print("Model loaded!")
     mp_detector = mp.solutions.face_mesh.FaceMesh(
         static_image_mode=False,
@@ -45,31 +45,45 @@ def main():
 
     now = 0
     last = 0
+    prediction = 0
 
     while True:
         image_rgb = cam.read_frame()
         now = time.time()
         # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-        cv2.imshow("camera", image_rgb)
+        results = mp_detector.process(image_rgb)
+        _, landmarks = face_get_XYZ(results=results, image_rgb=None)
 
         # Process the image to the model
+<<<<<<< Updated upstream
         if now - last > 0.2:
             results = mp_detector.process(image_rgb)
             _, landmarks = face_get_XYZ(results)
             landmarks = normalize_L0(landmarks)
             prediction = model.predict(np.array(landmarks))
+=======
+        if now - last > 0.5:
+>>>>>>> Stashed changes
 
-            cv2.putText(
-                image_rgb,
-                f"Emotion: {classes[prediction]}",
-                org=(20, 40),
-                fontFace=2,
-                fontScale=0.65,
-                color=RED,
-            )
+            if landmarks is None:
+                last = time.time()
+                continue
+
+            landmarks = np.expand_dims(landmarks, (0, 3))
+            prediction = np.argmax(model.predict(landmarks, verbose=0))
 
             last = time.time()
+
+        cv2.putText(
+            image_rgb,
+            f"Emotion: {classes[prediction]}",
+            org=(20, 40),
+            fontFace=2,
+            fontScale=0.65,
+            color=RED,
+        )
+
+        cv2.imshow("camera", image_rgb)
 
         key = cv2.waitKey(int(1 / FPS * 1000)) & 0xFF
 
