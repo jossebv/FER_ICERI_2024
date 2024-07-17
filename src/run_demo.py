@@ -4,7 +4,7 @@ import time
 import numpy as np
 import mediapipe as mp
 from cameras import CVCamera
-from landmarks_utils import face_get_XYZ
+from landmarks_utils import face_get_XYZ, normalize_L0
 
 # RESOLUTIONS
 HIGHRES_SIZE = (1280, 720)
@@ -57,6 +57,7 @@ def main():
         if now - last > 0.2:
             results = mp_detector.process(image_rgb)
             _, landmarks = face_get_XYZ(results)
+            landmarks = normalize_L0(landmarks)
             prediction = model.predict(np.array(landmarks))
 
             cv2.putText(
