@@ -1,4 +1,4 @@
-from keras.models import Sequential
+from keras import Sequential
 import keras
 
 
