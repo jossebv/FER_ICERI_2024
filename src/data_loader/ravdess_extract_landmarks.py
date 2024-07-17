@@ -7,7 +7,9 @@ from tqdm import tqdm
 
 DATA_PATH = "data/RAVDESS"
 ANNOT_PATH = os.path.join(DATA_PATH, "annotations_frames.csv")
-LANDMARKS_SAVE_DIR = os.path.join(DATA_PATH, "landmarks")
+LANDMARKS_SAVE_DIR = os.path.join(DATA_PATH, "landmarks_L0")
+
+NORM_TYPE = "L0"  # Possible values: "NONE", "L0"
 
 
 def extract_landmarks(frame_path, mp_detector):
@@ -23,6 +25,20 @@ def extract_landmarks(frame_path, mp_detector):
             landmarks_values[i] = [x, y]
 
     return np.array(landmarks_values)
+
+
+def normalize_L0(landmarks):
+    if np.sum(landmarks) == 0:
+        return landmarks
+
+    x_off = landmarks[0, 0]
+    y_off = landmarks[0, 1]
+
+    for i in range(len(landmarks)):
+        landmarks[i, 0] -= x_off
+        landmarks[i, 1] -= y_off
+
+    return landmarks
 
 
 def save_landmarks(frame_sub_path, landmarks):
@@ -45,4 +61,6 @@ if __name__ == "__main__":
         frame_path = frame_annot.loc["path"]
         frame_sub_path = os.path.join(*frame_path.split(".")[0].split("/")[-3:])
         landmarks = extract_landmarks(frame_path, mp_detector)
+        if NORM_TYPE == "L0":
+            landmarks = normalize_L0(landmarks)
         save_landmarks(frame_sub_path, landmarks)
