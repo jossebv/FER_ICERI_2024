@@ -43,3 +43,4 @@ venv/
 
 #W&B
 wandb/
+src/data_loader/__pycache__/ravdess_dataloader.cpython-311.pyc
