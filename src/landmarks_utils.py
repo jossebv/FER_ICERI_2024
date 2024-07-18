@@ -38,7 +38,7 @@ def face_get_XYZ(results, image_rgb=None):
     landmark_values = [[0, 0] for _ in range(478)]
 
     if results.multi_face_landmarks is None:
-        return image_rgb, landmark_values
+        return image_rgb, np.array(landmark_values)
 
     for face_landmarks in results.multi_face_landmarks:
         for i in range(len(face_landmarks.landmark)):
@@ -46,8 +46,9 @@ def face_get_XYZ(results, image_rgb=None):
             y = 1 - face_landmarks.landmark[i].y
             landmark_values[i] = [x, y]
 
+        landmarks = np.array(landmark_values)
+
         if image_rgb is None:
-            landmarks = np.array(landmark_values)
             return None, landmarks
 
         mp.solutions.drawing_utils.draw_landmarks(
@@ -72,7 +73,7 @@ def face_get_XYZ(results, image_rgb=None):
             connection_drawing_spec=mp.solutions.drawing_styles.get_default_face_mesh_iris_connections_style(),
         )
 
-    return image_rgb, landmark_values
+    return image_rgb, landmarks
 
 
 def normalize_L0(landmarks):
