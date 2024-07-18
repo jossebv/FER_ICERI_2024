@@ -31,8 +31,23 @@ classes = [
 ]
 
 
+def get_face_corners(landmarks, image_size):
+    maxs = np.squeeze(np.max(landmarks, axis=0))
+    mins = np.squeeze(np.min(landmarks, axis=0))
+    corner_ul = np.array([mins[0], 1 - maxs[1]])
+    corner_br = np.array([maxs[0], 1 - mins[1]])
+
+    for i in range(2):
+        corner_ul[i] = int(corner_ul[i] * image_size[i])
+        corner_br[i] = int(corner_br[i] * image_size[i])
+
+    corner_ul = corner_ul.astype(np.int32)
+    corner_br = corner_br.astype(np.int32)
+    return corner_ul, corner_br
+
+
 def main():
-    model = keras.models.load_model("models/cnn.keras")
+    model = keras.models.load_model("models/cnn_L0_V2.keras")
     print("Model loaded!")
     mp_detector = mp.solutions.face_mesh.FaceMesh(
         static_image_mode=False,
@@ -40,7 +55,7 @@ def main():
         refine_landmarks=True,
         min_detection_confidence=0.5,
     )
-    cam = CVCamera(recording_res=LARGE_SIZE, index_cam=1)
+    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
     cam.start()
 
     now = 0
@@ -53,6 +68,7 @@ def main():
         # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = mp_detector.process(image_rgb)
         _, landmarks = face_get_XYZ(results=results, image_rgb=None)
+        corner_ul, corner_br = get_face_corners(landmarks, HIGHRES_SIZE)
 
         # Process the image to the model
         if now - last > 0.5:
@@ -61,6 +77,7 @@ def main():
                 last = time.time()
                 continue
 
+            landmarks = landmarks.astype(np.float32)
             landmarks = normalize_L0(landmarks)
             landmarks = np.expand_dims(landmarks, (0, 3))
             prediction = np.argmax(model.predict(landmarks, verbose=0))
@@ -70,13 +87,15 @@ def main():
         cv2.putText(
             image_rgb,
             f"Emotion: {classes[prediction]}",
-            org=(20, 40),
+            org=(corner_ul[0], corner_ul[1] - 5),
             fontFace=2,
             fontScale=0.65,
             color=RED,
         )
 
-        cv2.imshow("camera", image_rgb)
+        cv2.rectangle(image_rgb, corner_ul, corner_br, color=RED, thickness=2)
+
+        cv2.imshow("Emotions classifier", image_rgb)
 
         key = cv2.waitKey(int(1 / FPS * 1000)) & 0xFF
 
