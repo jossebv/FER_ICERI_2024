@@ -16,10 +16,20 @@ class RavdessDataloader:
         self,
         annot_path,
         split,
+        normalization,
         random_seed,
     ):
+        assert normalization in [
+            "None",
+            "L0",
+            "L0_Size",
+        ], "Normalization not valid, please use one from the list: ['None', 'L0']"
+
+        print("[Preparing dataloader]")
+
         self.annot_path = annot_path
         self.split = split
+        print(f"\tSplit: {split}")
         self.random_seed = random_seed
 
         self.annotations = pd.read_csv(annot_path).sample(
@@ -28,20 +38,28 @@ class RavdessDataloader:
         train, test = train_test_split(self.annotations, random_state=random_seed)
 
         print(
-            f"Total len: {len(self.annotations)}:\n\t- Train: {len(train)}\n\t- Test: {len(test)}"
+            f"\tTotal len: {len(self.annotations)}:\n\t\t- Train: {len(train)}\n\t\t- Test: {len(test)}"
         )
 
         self.data = train if self.split == "train" else test
         self.data_len = len(self.data)
+
+        self.apndx = ""
+        if normalization == "L0":
+            self.apndx = "_L0"
+        elif normalization == "L0_Size":
+            self.apndx = "_L0_SizeNorm"
+
+        print(f"\tNormalization: {normalization}")
 
     def generator(self):
         idx = 0
         while idx < self.data_len:
             frame_annotation = self.data.iloc[idx]
             frame_path = frame_annotation.loc["path"]
-            landmarks_path = frame_path.replace("frames", "landmarks").replace(
-                "jpg", "npy"
-            )
+            landmarks_path = frame_path.replace(
+                "frames", f"landmarks{self.apndx}"
+            ).replace("jpg", "npy")
             landmarks = np.load(landmarks_path)
             emotion_id = frame_annotation.loc["emotion"] - 1  # Emotions in range [0,7]
             yield landmarks, emotion_id
@@ -57,8 +75,10 @@ def preprocess(landmarks, label):
     return landmarks, label
 
 
-def prepare_dataloader(annotations_path, split, batch_size, random_seed=42):
-    dataset = RavdessDataloader(annotations_path, split, random_seed)
+def prepare_dataloader(
+    annotations_path, split, batch_size, normalization, random_seed=42
+):
+    dataset = RavdessDataloader(annotations_path, split, normalization, random_seed)
     dataloader = tf.data.Dataset.from_generator(
         generator=dataset.generator,
         output_signature=(
