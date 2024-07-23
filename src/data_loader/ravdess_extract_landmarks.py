@@ -1,4 +1,5 @@
 import os
+import math
 import cv2
 import pandas as pd
 import numpy as np
@@ -7,9 +8,10 @@ from tqdm import tqdm
 
 DATA_PATH = "data/RAVDESS"
 ANNOT_PATH = os.path.join(DATA_PATH, "annotations_frames.csv")
-LANDMARKS_SAVE_DIR = os.path.join(DATA_PATH, "landmarks_L0")
+LANDMARKS_SAVE_DIR = os.path.join(DATA_PATH, "landmarks_L0_SizeNorm")
 
 NORM_TYPE = "L0"  # Possible values: "NONE", "L0"
+NORM_SIZE = True
 
 
 def extract_landmarks(frame_path, mp_detector):
@@ -41,6 +43,19 @@ def normalize_L0(landmarks):
     return landmarks
 
 
+def normalize_size(landmarks, target_dist=0.25):
+    n_points = len(landmarks[:, 0])
+    centroid = (landmarks[:, 0].sum() / n_points, landmarks[:, 1].sum() / n_points)
+
+    dist_centr_l0 = math.sqrt(
+        math.pow((centroid[0] - landmarks[0, 0]), 2)
+        + math.pow((centroid[1] - landmarks[0, 1]), 2)
+    )
+    scale = target_dist / dist_centr_l0
+
+    return scale * landmarks
+
+
 def save_landmarks(frame_sub_path, landmarks):
     save_path = os.path.join(LANDMARKS_SAVE_DIR, frame_sub_path)
     os.makedirs(os.path.join(*save_path.split("/")[:-1]), exist_ok=True)
@@ -63,4 +78,6 @@ if __name__ == "__main__":
         landmarks = extract_landmarks(frame_path, mp_detector)
         if NORM_TYPE == "L0":
             landmarks = normalize_L0(landmarks)
+        if NORM_SIZE:
+            landmarks = normalize_size(landmarks)
         save_landmarks(frame_sub_path, landmarks)
