@@ -1,5 +1,7 @@
 import mediapipe as mp
 import numpy as np
+import math
+import matplotlib.pyplot as plt
 
 
 def hand_get_XYZ(results, image_rgb):
@@ -88,3 +90,22 @@ def normalize_L0(landmarks):
         landmarks[i, 1] -= y_off
 
     return landmarks
+
+
+def normalize_size(landmarks, target_dist=0.25):
+    n_points = len(landmarks[:, 0])
+    centroid = (landmarks[:, 0].sum() / n_points, landmarks[:, 1].sum() / n_points)
+
+    dist_centr_l0 = math.sqrt(
+        math.pow((centroid[0] - landmarks[0, 0]), 2)
+        + math.pow((centroid[1] - landmarks[0, 1]), 2)
+    )
+    scale = target_dist / dist_centr_l0
+
+    return scale * landmarks
+
+
+def plot_face_landmarks(landmarks, ax):
+    ax.clear()
+    for i in range(len(landmarks)):
+        plt.plot(landmarks[i, 0], landmarks[i, 1], "bo")
