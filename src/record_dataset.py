@@ -13,22 +13,29 @@ import cameras
 use_landmarks = True
 if use_landmarks:
     import mediapipe as mp
-    from src.landmarks_utils import hand_get_XYZ, face_get_XYZ
+
+    sys.path.append(".")
+    from src.landmarks_utils import face_get_XYZ
 
 # Array of class names
-classes = ["Happy", "Sad", "Angry"]
-
+classes = ["Happy", "Sad", "Angry", "Surprise"]
 num_classes = len(classes)
 
+# Recording resolutions
+HIGHRES_SIZE = (1280, 720)
+LARGE_SIZE = (640, 480)
+SMALL_SIZE = (320, 200)
+
 # Base directory where the new dataset is going to be stored
-dataset_dir = "data/my_faces_dataset"
+DATASET_DIR = "data/my_faces_dataset"
 
 # Total number of images per class in the dataset
-num_images_per_class = 10
+NUM_IMAGES_PER_CLASS = 30
 
 # Percentage of the recorded images that will be used for training (rest for test)
-training_percentage = 66
+TRAINING_TEST_PERCENTAGE = 66
 
+# RGB colors
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
 RED = (0, 0, 255)
@@ -78,6 +85,7 @@ def CreateDefaultDatasetFolders(base_dataset_dir):
                 print(new_dir)
                 print("\n[WARNING]\n")
 
+                print("Do you want to record more instances?")
                 yes_to_all_result = wait_for_keypress("c", "q", "y")
 
 
@@ -88,10 +96,10 @@ def DisplayPreviewScreen(cam, class_to_record, mp_detector):
     while (
         True
     ):  # Empieza a mostrar la imagen por pantalla pra que le usuario se prepare. Cuando se presiona la tecla s el sistema compienza a grabar.
-        image = cam.read_frame()
+        image_rgb = cam.read_frame()
 
         # Convert the image to RGB for Mediapipe
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         if use_landmarks:
             # Process the image and get hand landmarks
@@ -154,7 +162,7 @@ def StartRecordingImages(cam, num_images_to_record, mp_detector=None):
         image = cam.read_frame()
 
         # Convert the image to RGB for Mediapipe
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # image_rgb=cv2.flip(image_rgb,+1) #displays image in mirror format
 
@@ -230,15 +238,17 @@ def SaveRecordedImagesToDisk(recorded_images, class_to_save, num_samples_per_cla
             end = num_samples_per_class["train"] + num_samples_per_class["test"]
 
         saved_images = sorted(
-            os.listdir(os.path.join(dataset_dir, subset, class_to_save))
+            os.listdir(os.path.join(DATASET_DIR, subset, class_to_save))
         )
         if len(saved_images) > 0:
             last_saved_idx = int(saved_images[-1].split(".")[0].split("_")[-1])
         else:
             last_saved_idx = 0
 
-        annot_path = os.path.join(dataset_dir, subset, "annotations.csv")
-        if os.path.isfile(annot_path):
+        annot_path = os.path.join(DATASET_DIR, f"{subset}_annotations.csv")
+        if os.path.isfile(
+            annot_path
+        ):  # If exists, append new data to the existing file
             annotations = pd.read_csv(annot_path)
         else:
             annotations = pd.DataFrame(columns=["path", "class"])
@@ -252,7 +262,7 @@ def SaveRecordedImagesToDisk(recorded_images, class_to_save, num_samples_per_cla
                 + f"{last_saved_idx+i-ini+1:05d}"
                 + ".jpg"
             )
-            filename = os.path.join(dataset_dir, subset, class_to_save, name)
+            filename = os.path.join(DATASET_DIR, subset, class_to_save, name)
             # save image in dataset
             cv2.imwrite(filename, recorded_images[i])
             new_row = pd.Series(
@@ -272,12 +282,12 @@ def SaveRecordedImagesToDisk(recorded_images, class_to_save, num_samples_per_cla
 def main():
     num_samples_per_class = {}
     num_samples_per_class["train"] = int(
-        num_images_per_class * training_percentage / 100
+        NUM_IMAGES_PER_CLASS * TRAINING_TEST_PERCENTAGE / 100
     )
     num_samples_per_class["test"] = (
-        num_images_per_class - num_samples_per_class["train"]
+        NUM_IMAGES_PER_CLASS - num_samples_per_class["train"]
     )
-    num_samples_per_class["total"] = num_images_per_class
+    num_samples_per_class["total"] = NUM_IMAGES_PER_CLASS
 
     print("\n[NEW DATASET RECORDING]")
     print("\t- %d classes: " % num_classes, classes)
@@ -289,18 +299,14 @@ def main():
         "\t- %d samples for training (i.e. %0.2f%%) and %d for testing (i.e. %0.2f%%)"
         % (
             num_samples_per_class["train"],
-            training_percentage,
+            TRAINING_TEST_PERCENTAGE,
             num_samples_per_class["test"],
-            100 - training_percentage,
+            100 - TRAINING_TEST_PERCENTAGE,
         )
     )
 
-    CreateDefaultDatasetFolders(dataset_dir)
+    CreateDefaultDatasetFolders(DATASET_DIR)
     # cv2.startWindowThread()
-
-    highres_size = (1280, 720)
-    large_size = (640, 480)
-    small_size = (320, 200)
 
     if use_landmarks:
         # Initialize Mediapipe
@@ -316,7 +322,7 @@ def main():
         mp_detector = None
 
     # Initialize PiCamera
-    cam = cameras.CVCamera(recording_res=large_size, index_cam=0)
+    cam = cameras.CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
 
     # Main loop
     for c in classes:
