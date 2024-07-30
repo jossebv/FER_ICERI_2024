@@ -50,10 +50,12 @@ class PICamera(Camera):
                 },
             )
             picam2.configure(preview_config)
-            picam2.start_preview(Preview.NULL)
 
         except ModuleNotFoundError:
             print(
                 "Cannnot initialize PiCamera on this device. Check if you are using a Raspberry Pi and it is up to date."
             )
             exit()
+
+    def read_frame(self):
+        return super().read_frame()
