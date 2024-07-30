@@ -3,8 +3,13 @@ import cv2
 import time
 import numpy as np
 import mediapipe as mp
+import matplotlib.pyplot as plt
 from cameras import CVCamera
-from landmarks_utils import face_get_XYZ, normalize_L0
+from landmarks_utils import (
+    face_get_XYZ,
+    normalize_L0,
+    normalize_size,
+)
 
 # RESOLUTIONS
 HIGHRES_SIZE = (1280, 720)
@@ -19,16 +24,18 @@ RED = (0, 0, 255)
 # FRAME RATE
 FPS = 30
 
-classes = [
-    "neutral",
-    "calm",
-    "happy",
-    "sad",
-    "angry",
-    "fearful",
-    "disgust",
-    "surprised",
-]
+# classes = [
+#     "neutral",
+#     "calm",
+#     "happy",
+#     "sad",
+#     "angry",
+#     "fearful",
+#     "disgust",
+#     "surprised",
+# ]
+
+my_recorded_classes = ["Angry", "Happy", "Sad", "Surprise"]
 
 
 def get_face_corners(landmarks, image_size):
@@ -47,7 +54,7 @@ def get_face_corners(landmarks, image_size):
 
 
 def main():
-    model = keras.models.load_model("models/cnn_L0_V2.keras")
+    model = keras.models.load_model("models/FER_finetuned.keras")
     print("Model loaded!")
     mp_detector = mp.solutions.face_mesh.FaceMesh(
         static_image_mode=False,
@@ -73,32 +80,38 @@ def main():
         # Process the image to the model
         if now - last > 0.5:
 
-            if landmarks is None:
-                last = time.time()
+            if landmarks.sum() == 0:
                 continue
 
             landmarks = landmarks.astype(np.float32)
+
+            # Apply normalizations
             landmarks = normalize_L0(landmarks)
+            landmarks = normalize_size(landmarks)
+
+            # Add axis for batch (axis 0) and channels (axis 3)
             landmarks = np.expand_dims(landmarks, (0, 3))
-            prediction = np.argmax(model.predict(landmarks, verbose=0))
+
+            # Obtain model's prediction
+            prediction = np.argmax(model(landmarks))
 
             last = time.time()
 
+        # Plot emotion label
         cv2.putText(
             image_rgb,
-            f"Emotion: {classes[prediction]}",
+            f"Emotion: {my_recorded_classes[prediction]}",
             org=(corner_ul[0], corner_ul[1] - 5),
             fontFace=2,
             fontScale=0.65,
             color=RED,
         )
 
+        # Plot rectangle around face
         cv2.rectangle(image_rgb, corner_ul, corner_br, color=RED, thickness=2)
 
         cv2.imshow("Emotions classifier", image_rgb)
-
         key = cv2.waitKey(int(1 / FPS * 1000)) & 0xFF
-
         if key == ord("q"):
             break
 
