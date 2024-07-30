@@ -112,9 +112,9 @@ def create_vit_classifier(
     # Add MLP.
     features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
     # Classify outputs.
-    logits = layers.Dense(num_classes)(features)
+    output = layers.Dense(num_classes, activation="softmax")(features)
     # Create the Keras model.
-    model = keras.Model(inputs=inputs, outputs=logits)
+    model = keras.Model(inputs=inputs, outputs=output)
 
     print("[MODEL SUMMARY]")
     model.summary()
