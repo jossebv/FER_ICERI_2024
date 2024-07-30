@@ -54,15 +54,20 @@ def get_face_corners(landmarks, image_size):
 
 
 def main():
+    # Load model to use
     model = keras.models.load_model("models/FER_finetuned.keras")
     print("Model loaded!")
+
+    # Load mediapipe Face Mesh utility for landmark extraction
     mp_detector = mp.solutions.face_mesh.FaceMesh(
         static_image_mode=False,
         max_num_faces=1,
         refine_landmarks=True,
         min_detection_confidence=0.5,
     )
-    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
+
+    # Start camera
+    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
     cam.start()
 
     now = 0
@@ -77,7 +82,7 @@ def main():
         _, landmarks = face_get_XYZ(results=results, image_rgb=None)
         corner_ul, corner_br = get_face_corners(landmarks, HIGHRES_SIZE)
 
-        # Process the image to the model
+        # Process the image to the model every 0.5s
         if now - last > 0.5:
 
             if landmarks.sum() == 0:
