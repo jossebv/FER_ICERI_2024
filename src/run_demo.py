@@ -1,3 +1,4 @@
+print("Loading dependencies... (It might take a while the first time)")
 import keras
 import cv2
 import time
@@ -55,6 +56,7 @@ def get_face_corners(landmarks, image_size):
 
 def main():
     # Load model to use
+    print("Loading model...")
     model = keras.models.load_model("models/FER_finetuned.keras")
     print("Model loaded!")
 
@@ -76,6 +78,10 @@ def main():
 
     while True:
         image_rgb = cam.read_frame()
+        if image_rgb is None:
+            # Sometimes the camera needs approval to activate, so wait until we start receiving images.
+            continue
+
         now = time.time()
         # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = mp_detector.process(image_rgb)
