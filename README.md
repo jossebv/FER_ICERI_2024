@@ -25,3 +25,12 @@ The directory contains the following:
 -   **Training a system over the custom dataset**. Once the dataset has been recorded, the `src.notebooks.FER_2024.ipynb` can be used to train and analyse a system using that dataset. It contains all the necessary for the process. We recommend running it on collab as it will use the GPU to speed up the process.
 
 -   **Run the demo**. Finally, once you trained your custom model, run the `src.run_demo.py` script. This file will run the model you just trained to detect the emotion you are doing. The file must be first configured by adding the desired classes to train and the path to the model you just trained. Remember that you must also check that the program is preprocessing the landmarks as same as you did when training the model.
+
+## Demo
+
+The current version of the demo allows for the recognition of 4 different emotions: ["Angry", "Happy", "Sad", "Surprise"]. To recognise them, the default model is a CNN pretrained on RAVDESS and finetuned with the images that can be found on `data/my_faces_dataset`. To run the demo execute the following command from the root of the directory:
+
+```console
+$ source venv/bin/activate
+$ python3 src/run_demo.py
+```
