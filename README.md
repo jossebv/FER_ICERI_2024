@@ -12,6 +12,15 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt
 ```
 
+In case you are installing for the Raspberry PI 5 follow these steps:
+
+```console
+$ sudo apt-get install libhdf5-serial-dev
+$ python3 -m venv --system-site-packages venv
+$ source venv/bin/activate
+$ pip install -r requirements_raspi.txt
+```
+
 ## Directory
 
 The directory contains the following:
@@ -20,7 +29,7 @@ The directory contains the following:
 
 -   **Record a custom dataset**. The dataset can be recorded by running the script `src.record_dataset`. In the script you can configure the classes to be recorded, as well as the name of the dataset and the number of instances to record. The recording process is not destructive, which means that the new images recorded will be added to the existing ones.
 
-    For interacting with the system camera, the script initializes a object using cv2. At the moment, it is only available for using with `CVCamera` class. This class allows for two parameters, the resolution and the index of the camera to use. This index depends on the system that is being used and the number of cameras connected. For the default one set it to 0. Future implementations will make also available to use the Raspberry Pi camera.
+    For interacting with the system camera, the script initializes a object using cv2. For using your laptop camera use the `CVCamera` class. This class allows for two parameters, the resolution and the index of the camera to use. This index depends on the system that is being used and the number of cameras connected. For the default one set it to 0. In case you are using a Raspberry Pi camera, you should use the `PICamera` class. It accepts one parameter, which is the recording resolution. For both cases remember to keep the same resolution for the recording of the dataset and the demo.
 
 -   **Training a system over the custom dataset**. Once the dataset has been recorded, the `src.notebooks.FER_2024.ipynb` can be used to train and analyse a system using that dataset. It contains all the necessary for the process. We recommend running it on collab as it will use the GPU to speed up the process.
 
