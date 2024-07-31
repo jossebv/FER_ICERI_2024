@@ -8,7 +8,7 @@ import sys
 import tty
 import termios
 
-import cameras
+from cameras import CVCamera, PICamera
 
 use_landmarks = True
 if use_landmarks:
@@ -321,8 +321,9 @@ def main():
     else:
         mp_detector = None
 
-    # Initialize PiCamera
-    cam = cameras.CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
+    # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
+    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
+    # cam = PICamera(recording_res=HIGHRES_SIZE)
 
     # Main loop
     for c in classes:

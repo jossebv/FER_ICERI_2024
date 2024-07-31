@@ -5,7 +5,7 @@ import time
 import numpy as np
 import mediapipe as mp
 import matplotlib.pyplot as plt
-from cameras import CVCamera
+from cameras import CVCamera, PICamera
 from landmarks_utils import (
     face_get_XYZ,
     normalize_L0,
@@ -68,8 +68,10 @@ def main():
         min_detection_confidence=0.5,
     )
 
-    # Start camera
+    # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
     cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
+    #cam = PICamera(recording_res=HIGHRES_SIZE)
+    
     cam.start()
 
     now = 0
