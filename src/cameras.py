@@ -1,4 +1,5 @@
 import cv2
+from time import sleep
 
 
 class Camera:
@@ -36,11 +37,12 @@ class CVCamera(Camera):
 class PICamera(Camera):
     def __init__(self, recording_res):
         try:
-            from picamera import Picamera2
+            from picamera2 import Picamera2, Preview
             import libcamera
 
-            picam2 = Picamera2()
-            preview_config = picam2.create_preview_configuration(
+            self.picam2 = Picamera2()
+            self.Preview = Preview
+            preview_config = self.picam2.create_preview_configuration(
                 main={"size": recording_res},
                 controls={
                     "AwbEnable": False,
@@ -49,11 +51,22 @@ class PICamera(Camera):
                     "AnalogueGain": 1.0,
                 },
             )
-            picam2.configure(preview_config)
-            picam2.start_preview(Preview.NULL)
+            self.picam2.configure(preview_config)
 
         except ModuleNotFoundError:
             print(
                 "Cannnot initialize PiCamera on this device. Check if you are using a Raspberry Pi and it is up to date."
             )
             exit()
+            
+    def start(self):
+        #self.picam2.start_preview(self.Preview.QTGL)
+        self.picam2.start()
+        
+    def close(self):
+        self.picam2.close()
+
+    def read_frame(self):
+        image_bgr = self.picam2.capture_array("main")
+        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        return image_rgb

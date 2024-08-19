@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 sys.path.append(".")
-from src.landmarks_utils import face_get_XYZ
+from src.landmarks_utils import normalize_L0, normalize_size
 import mediapipe as mp
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
@@ -16,15 +16,9 @@ class RavdessDataloader:
         self,
         annot_path,
         split,
-        normalization,
+        normalizations,
         random_seed,
     ):
-        assert normalization in [
-            "None",
-            "L0",
-            "L0_Size",
-        ], "Normalization not valid, please use one from the list: ['None', 'L0']"
-
         print("[Preparing dataloader]")
 
         self.annot_path = annot_path
@@ -44,23 +38,26 @@ class RavdessDataloader:
         self.data = train if self.split == "train" else test
         self.data_len = len(self.data)
 
-        self.apndx = ""
-        if normalization == "L0":
-            self.apndx = "_L0"
-        elif normalization == "L0_Size":
-            self.apndx = "_L0_SizeNorm"
+        self.normalizations = normalizations
+        print(f"Normalizations used: {normalizations}")
 
-        print(f"\tNormalization: {normalization}")
+    def apply_normalizations(self, landmarks):
+        if "L0" in self.normalizations:
+            landmarks = normalize_L0(landmarks)
+        if "size" in self.normalizations:
+            landmarks = normalize_size(landmarks)
+        return landmarks
 
     def generator(self):
         idx = 0
         while idx < self.data_len:
             frame_annotation = self.data.iloc[idx]
             frame_path = frame_annotation.loc["path"]
-            landmarks_path = frame_path.replace(
-                "frames", f"landmarks{self.apndx}"
-            ).replace("jpg", "npy")
+            landmarks_path = frame_path.replace("frames", "landmarks").replace(
+                "jpg", "npy"
+            )
             landmarks = np.load(landmarks_path)
+            landmarks = self.apply_normalizations(landmarks)
             emotion_id = frame_annotation.loc["emotion"] - 1  # Emotions in range [0,7]
             yield landmarks, emotion_id
             idx += 1

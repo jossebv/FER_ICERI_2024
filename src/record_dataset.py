@@ -8,7 +8,7 @@ import sys
 import tty
 import termios
 
-import cameras
+from cameras import CVCamera, PICamera
 
 use_landmarks = True
 if use_landmarks:
@@ -73,7 +73,7 @@ def CreateDefaultDatasetFolders(base_dataset_dir):
     # Create default dataset folders
     for c in classes:
         for subset in ["train", "test"]:
-            new_dir = os.path.join(base_dataset_dir, subset, c)
+            new_dir = os.path.join(base_dataset_dir, "raw", subset, c)
             try:
                 os.makedirs(new_dir)
             except:
@@ -238,7 +238,7 @@ def SaveRecordedImagesToDisk(recorded_images, class_to_save, num_samples_per_cla
             end = num_samples_per_class["train"] + num_samples_per_class["test"]
 
         saved_images = sorted(
-            os.listdir(os.path.join(DATASET_DIR, subset, class_to_save))
+            os.listdir(os.path.join(DATASET_DIR, "raw", subset, class_to_save))
         )
         if len(saved_images) > 0:
             last_saved_idx = int(saved_images[-1].split(".")[0].split("_")[-1])
@@ -262,7 +262,7 @@ def SaveRecordedImagesToDisk(recorded_images, class_to_save, num_samples_per_cla
                 + f"{last_saved_idx+i-ini+1:05d}"
                 + ".jpg"
             )
-            filename = os.path.join(DATASET_DIR, subset, class_to_save, name)
+            filename = os.path.join(DATASET_DIR, "raw", subset, class_to_save, name)
             # save image in dataset
             cv2.imwrite(filename, recorded_images[i])
             new_row = pd.Series(
@@ -321,8 +321,9 @@ def main():
     else:
         mp_detector = None
 
-    # Initialize PiCamera
-    cam = cameras.CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
+    # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
+    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
+    # cam = PICamera(recording_res=HIGHRES_SIZE)
 
     # Main loop
     for c in classes:
