@@ -36,6 +36,11 @@ def hand_get_XYZ(results, image_rgb):
 
 
 def face_get_XYZ(results, image_rgb=None):
+    """
+    Returns:
+        - Image with the landmarks draw on it.
+        - Landmarks coordinates.
+    """
 
     landmark_values = [[0, 0] for _ in range(478)]
 
