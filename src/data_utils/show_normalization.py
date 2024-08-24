@@ -26,7 +26,7 @@ def draw_landmarks(landmarks, ax=None, title=""):
         plt.scatter(x=landmarks[:, 0], y=landmarks[:, 1])
     else:
         ax.set_box_aspect(1)
-        ax.scatter(x=landmarks[:, 0], y=landmarks[:, 1], s=1)
+        ax.scatter(x=(1280 / 720) * landmarks[:, 0], y=landmarks[:, 1], s=1)
         ax.scatter(x=centroid[0], y=centroid[1], c="r", marker="2")
         ax.annotate(
             text="Centroid",
