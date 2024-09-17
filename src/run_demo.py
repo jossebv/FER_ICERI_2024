@@ -4,6 +4,7 @@ import cv2
 import time
 import numpy as np
 import mediapipe as mp
+from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 from cameras import CVCamera, PICamera
 from landmarks_utils import (
@@ -36,7 +37,7 @@ FPS = 30
 #     "surprised",
 # ]
 
-my_recorded_classes = ["Angry", "Happy", "Sad", "Surprise"]
+my_recorded_classes = ["Angry", "Happy", "Sad", "Surprise"] # Remember they must keep the same order than the used in training
 
 
 def get_face_corners(landmarks, image_size):
@@ -52,6 +53,34 @@ def get_face_corners(landmarks, image_size):
     corner_ul = corner_ul.astype(np.int32)
     corner_br = corner_br.astype(np.int32)
     return corner_ul, corner_br
+
+
+def draw_results(image, results, face_corners=None):
+    """
+    Draws the results and graphics on top of the camera's recording.
+
+    Parameters:
+        - image: array of the recorded image
+        - results: normalized logits obtained from the model
+        - face_corners: list with the corners with format [corner_up_left, corner_down_right] == [(x0,y0), (x1,y1)]
+    """
+    prediction_idx = np.argmax(results)
+    probability = results[0,prediction_idx]
+    label = my_recorded_classes[prediction_idx]
+
+    image_pil = Image.fromarray(image)
+    draw = ImageDraw.Draw(image_pil)
+
+    #emoji_font = ImageFont.truetype("NotoColorEmoji.ttf", 48)
+    text_font = ImageFont.truetype("arial.ttf", 15)
+    draw.text((50, 50), f"Emotion: {label}", font=text_font, fill=(255, 0, 0, 255))
+
+    if face_corners is not None:
+        draw.rectangle(face_corners, outline=(255,0,0))
+
+    image_rgb = np.array(image_pil)
+    return image_rgb
+
 
 
 def main():
@@ -71,7 +100,7 @@ def main():
     # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
     cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
     #cam = PICamera(recording_res=HIGHRES_SIZE)
-    
+
     cam.start()
 
     now = 0
@@ -81,7 +110,7 @@ def main():
     while True:
         image_rgb = cam.read_frame()
         if image_rgb is None:
-            # Sometimes the camera needs approval to activate, so wait until we start receiving images.
+            # Depending the setup, the camera might need approval to activate, so wait until we start receiving images.
             continue
 
         now = time.time()
@@ -106,22 +135,24 @@ def main():
             landmarks = np.expand_dims(landmarks, (0, 3))
 
             # Obtain model's prediction
-            prediction = np.argmax(model(landmarks))
+            results = model(landmarks)
 
             last = time.time()
 
         # Plot emotion label
-        cv2.putText(
-            image_rgb,
-            f"Emotion: {my_recorded_classes[prediction]}",
-            org=(corner_ul[0], corner_ul[1] - 5),
-            fontFace=2,
-            fontScale=0.65,
-            color=RED,
-        )
+        # cv2.putText(
+        #     image_rgb,
+        #     f"Emotion: {my_recorded_classes[prediction]}",
+        #     org=(corner_ul[0], corner_ul[1] - 5),
+        #     fontFace=2,
+        #     fontScale=0.65,
+        #     color=RED,
+        # )
 
-        # Plot rectangle around face
-        cv2.rectangle(image_rgb, corner_ul, corner_br, color=RED, thickness=2)
+        # # Plot rectangle around face
+        # cv2.rectangle(image_rgb, corner_ul, corner_br, color=RED, thickness=2)
+
+        image_rgb = draw_results(image_rgb, results)
 
         cv2.imshow("Emotions classifier", image_rgb)
         key = cv2.waitKey(int(1 / FPS * 1000)) & 0xFF
