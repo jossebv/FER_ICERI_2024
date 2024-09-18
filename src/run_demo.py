@@ -37,7 +37,12 @@ FPS = 30
 #     "surprised",
 # ]
 
-my_recorded_classes = ["Angry", "Happy", "Sad", "Surprise"] # Remember they must keep the same order than the used in training
+my_recorded_classes = [
+    "Angry",
+    "Happy",
+    "Sad",
+    "Surprise",
+]  # Remember they must keep the same order than the used in training
 
 
 def get_face_corners(landmarks, image_size):
@@ -65,22 +70,26 @@ def draw_results(image, results, face_corners=None):
         - face_corners: list with the corners with format [corner_up_left, corner_down_right] == [(x0,y0), (x1,y1)]
     """
     prediction_idx = np.argmax(results)
-    probability = results[0,prediction_idx]
+    probability = results[0, prediction_idx] * 100
     label = my_recorded_classes[prediction_idx]
 
     image_pil = Image.fromarray(image)
     draw = ImageDraw.Draw(image_pil)
 
-    #emoji_font = ImageFont.truetype("NotoColorEmoji.ttf", 48)
-    text_font = ImageFont.truetype("arial.ttf", 15)
-    draw.text((50, 50), f"Emotion: {label}", font=text_font, fill=(255, 0, 0, 255))
+    # emoji_font = ImageFont.truetype("NotoColorEmoji.ttf", 48)
+    text_font = ImageFont.truetype("Arial.ttf", 16)
+    draw.text(
+        (face_corners[0][0], face_corners[0][1] - 20),
+        f"Emotion: {label} ({probability:.2f}%)",
+        font=text_font,
+        fill=(0, 0, 255, 255),
+    )
 
     if face_corners is not None:
-        draw.rectangle(face_corners, outline=(255,0,0))
+        draw.rectangle(face_corners, outline=(0, 0, 255, 255))
 
     image_rgb = np.array(image_pil)
     return image_rgb
-
 
 
 def main():
@@ -98,8 +107,8 @@ def main():
     )
 
     # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
-    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
-    #cam = PICamera(recording_res=HIGHRES_SIZE)
+    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
+    # cam = PICamera(recording_res=HIGHRES_SIZE)
 
     cam.start()
 
@@ -135,7 +144,7 @@ def main():
             landmarks = np.expand_dims(landmarks, (0, 3))
 
             # Obtain model's prediction
-            results = model(landmarks)
+            predictions = model(landmarks)
 
             last = time.time()
 
@@ -152,7 +161,9 @@ def main():
         # # Plot rectangle around face
         # cv2.rectangle(image_rgb, corner_ul, corner_br, color=RED, thickness=2)
 
-        image_rgb = draw_results(image_rgb, results)
+        image_rgb = draw_results(
+            image_rgb, predictions, face_corners=[tuple(corner_ul), tuple(corner_br)]
+        )
 
         cv2.imshow("Emotions classifier", image_rgb)
         key = cv2.waitKey(int(1 / FPS * 1000)) & 0xFF
