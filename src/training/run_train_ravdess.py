@@ -1,8 +1,8 @@
+# This file was used for the pretraining of some models on a larger set.
+
 import sys
 import keras
-import wandb
 import numpy as np
-from wandb.integration.keras import WandbMetricsLogger
 from sklearn.metrics import confusion_matrix
 
 sys.path.append(".")
@@ -56,13 +56,6 @@ def main():
         ANNOT_PATH, split="test", batch_size=100, normalization=NORM_TYPE
     )
 
-    wandb.init(
-        project="FER_DEMOSEI_2024",
-        entity="josebravopacheco-team",
-        group="VIT",
-        name="VIT",
-    )
-
     model = create_model("VIT")
 
     model.compile(
@@ -75,7 +68,6 @@ def main():
         x=trainloader,
         epochs=80,
         validation_data=testloader,
-        callbacks=[WandbMetricsLogger()],
     )
     model.save("models/VIT.keras")
 
@@ -84,8 +76,6 @@ def main():
 
     conf_matrix = confusion_matrix(y_true, predictions)
     print(conf_matrix)
-
-    wandb.finish()
 
 
 if __name__ == "__main__":
