@@ -27,10 +27,10 @@ LARGE_SIZE = (640, 480)
 SMALL_SIZE = (320, 200)
 
 # Base directory where the new dataset is going to be stored
-DATASET_DIR = "data/my_faces_dataset"
+DATASET_DIR = "data/my_faces_dataset_2"
 
 # Total number of images per class in the dataset
-NUM_IMAGES_PER_CLASS = 30
+NUM_IMAGES_PER_CLASS = 10
 
 # Percentage of the recorded images that will be used for training (rest for test)
 TRAINING_TEST_PERCENTAGE = 66
@@ -90,12 +90,9 @@ def CreateDefaultDatasetFolders(base_dataset_dir):
 
 
 def DisplayPreviewScreen(cam, class_to_record, mp_detector):
-
     cam.start()
 
-    while (
-        True
-    ):  # Empieza a mostrar la imagen por pantalla pra que le usuario se prepare. Cuando se presiona la tecla s el sistema compienza a grabar.
+    while True:  # Empieza a mostrar la imagen por pantalla pra que le usuario se prepare. Cuando se presiona la tecla s el sistema compienza a grabar.
         image_rgb = cam.read_frame()
 
         # Convert the image to RGB for Mediapipe
@@ -150,7 +147,6 @@ def StartRecordingImages(cam, num_images_to_record, mp_detector=None):
     # num of images recorded counter
     n_recorded = 0
     recorded_images = []
-    recording_frame = True
 
     cam.start()
 
@@ -159,7 +155,7 @@ def StartRecordingImages(cam, num_images_to_record, mp_detector=None):
 
     while True:
         # Read image
-        image = cam.read_frame()
+        image_rgb = cam.read_frame()
 
         # Convert the image to RGB for Mediapipe
         # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -322,7 +318,7 @@ def main():
         mp_detector = None
 
     # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
-    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=0)
+    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
     # cam = PICamera(recording_res=HIGHRES_SIZE)
 
     # Main loop

@@ -43,7 +43,7 @@ class PICamera(Camera):
             self.picam2 = Picamera2()
             self.Preview = Preview
             preview_config = self.picam2.create_preview_configuration(
-                main={"size": recording_res},
+                main={"size": recording_res[::-1]},
                 controls={
                     "AwbEnable": False,
                     # "AwbMode": libcamera.controls.AwbModeEnum.Indoor,
@@ -58,15 +58,17 @@ class PICamera(Camera):
                 "Cannnot initialize PiCamera on this device. Check if you are using a Raspberry Pi and it is up to date."
             )
             exit()
-            
+
     def start(self):
-        #self.picam2.start_preview(self.Preview.QTGL)
+        # self.picam2.start_preview(self.Preview.QTGL)
         self.picam2.start()
-        
+
     def close(self):
         self.picam2.close()
 
     def read_frame(self):
         image_bgr = self.picam2.capture_array("main")
+        # Depending on the raspberry orientation
+        image_bgr = cv2.rotate(image_bgr, cv2.ROTATE_90_COUNTERCLOCKWISE)
         image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
         return image_rgb
