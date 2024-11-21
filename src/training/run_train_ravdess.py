@@ -7,7 +7,7 @@ from sklearn.metrics import confusion_matrix
 
 sys.path.append(".")
 
-import src.models_definitions.CNN as CNN
+import src.models.CNN as CNN
 import src.models_definitions.VIT as VIT
 
 from src.data_loader.ravdess_dataloader import prepare_dataloader
