@@ -122,6 +122,7 @@ def main():
     if ON_RASPBERRY_PI:
         cam = PICamera(recording_res=HIGHRES_SIZE)
         sense_hat = SenseHat()
+        sense_hat.set_rotation(180)
     else:
         cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
         sense_hat = None
@@ -171,6 +172,8 @@ def main():
         cv2.imshow("Emotions classifier", image_rgb)
         key = cv2.waitKey(int(1 / FPS * 1000)) & 0xFF
         if key == ord("q"):
+            if ON_RASPBERRY_PI:
+                sense_hat.clear()
             break
 
 
