@@ -40,6 +40,8 @@ GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
 RED = (0, 0, 255)
 
+ON_RASPBERRY_PI = False
+
 
 def wait_for_keypress(target_key, exit_key, yes_to_all_key):
     print(
@@ -156,9 +158,6 @@ def StartRecordingImages(cam, num_images_to_record, mp_detector=None):
     while True:
         # Read image
         image_rgb = cam.read_frame()
-
-        # Convert the image to RGB for Mediapipe
-        # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # image_rgb=cv2.flip(image_rgb,+1) #displays image in mirror format
 
@@ -318,8 +317,10 @@ def main():
         mp_detector = None
 
     # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
-    cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
-    # cam = PICamera(recording_res=HIGHRES_SIZE)
+    if ON_RASPBERRY_PI:
+        cam = PICamera(recording_res=HIGHRES_SIZE)
+    else:
+        cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
 
     # Main loop
     for c in classes:
