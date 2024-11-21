@@ -35,9 +35,6 @@ db.sqlite3-journal
 # Ignore data directory
 data/
 
-#Ignore models directory
-models/
-
 #Ignore .DS_Store
 .DS_Store
 
