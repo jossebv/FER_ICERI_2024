@@ -121,8 +121,10 @@ def main():
     # Start camera, use CVCamera if working on a laptop and PICamera in case you are working on a Raspberry PI
     if ON_RASPBERRY_PI:
         cam = PICamera(recording_res=HIGHRES_SIZE)
+        sense_hat = SenseHat()
     else:
         cam = CVCamera(recording_res=HIGHRES_SIZE, index_cam=1)
+        sense_hat = None
 
     cam.start()
 
@@ -163,6 +165,7 @@ def main():
             predictions,
             classes,
             face_corners=[tuple(corner_ul), tuple(corner_br)],
+            sense_hat=sense_hat,
         )
 
         cv2.imshow("Emotions classifier", image_rgb)
