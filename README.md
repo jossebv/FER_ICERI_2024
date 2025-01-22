@@ -1,6 +1,6 @@
 # Face Emotion Recognition (FER) - ICERI 2024
 
-This project consists on the creation of a system capable of recognizing emotions by detecting the face of a person. The system works by extracting the landmarks of the subject and classifying them into different emotions by using a model previously trained.
+This project consists on the creation of a system capable of recognizing emotions by detecting the face of a person. The system works by extracting the landmarks of the subject and classifying them into different emotions by using a model previously trained. Click on the image to see a demo!
 
 [![FER Demo](/images/video_cover.png)](https://www.youtube.com/watch?v=HEggPs9-L8M&ab_channel=FernandoFern%C3%A1ndezMart%C3%ADnez "FER Demo")
 
